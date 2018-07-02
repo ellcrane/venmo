@@ -1,0 +1,5 @@
+.ipynb_checkpoints/
+geckodriver.log
+ghostdriver.log
+*.csv
+*.json
