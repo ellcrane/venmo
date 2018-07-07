@@ -43,6 +43,7 @@ def scrape(start_date, end_date, interval, limit=1000000):
         print(
             f'With your parameters, this function will scrape the public venmo API {scrape_count} times.')
         for i in range(start_unix_ts, end_unix_ts, interval):
+            print(i)
             url = get_venmo_url(i, i + interval, limit)
             data = get_venmo_data(url)['data']
             file_name = f'{i}_{i + interval}_{limit}'
@@ -58,14 +59,14 @@ if __name__ == '__main__':
                   int(argv[3][:-1]),
                   int(argv[4][:-1]),
                   int(argv[5][:-1]),
-                  int(argv[6][:-2])]
+                  int(argv[6][:-1])]
     print(f'Start Date: {start_date}')
     end_date = [int(argv[7][1:-1]),
                 int(argv[8][:-1]),
                 int(argv[9][:-1]),
                 int(argv[10][:-1]),
                 int(argv[11][:-1]),
-                int(argv[12][:-2])]
+                int(argv[12][:-1])]
     print(f'End Date: {end_date}')
     interval = int(argv[13])
     print(f'Interval: {interval} seconds')
