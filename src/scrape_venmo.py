@@ -1,11 +1,11 @@
 import requests
 import pandas as pd
 import boto3
+import time
 import datetime
 import calendar
 from sys import argv
 import json
-import time
 
 
 def get_unix_timestamp(time):
@@ -14,7 +14,7 @@ def get_unix_timestamp(time):
     OUTPUT: Int of unix timestamp
     '''
     dt = datetime.datetime(time[0], time[1], time[2], time[3], time[4], time[5])
-    return calendar.timegm(dt.utctimetuple())
+    return int(time.mktime(dt.timetuple()))
 
 
 def get_venmo_url(start_unix_timestamp, end_unix_timestamp, limit=1000000):
