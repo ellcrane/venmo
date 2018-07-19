@@ -8,12 +8,13 @@ from sys import argv
 import json
 
 
-def get_unix_timestamp(time):
+def get_unix_timestamp(input_time):
     '''
     INPUT: list in following format: [year, month, day, hours (24), minutes, seconds] **for UTC**
     OUTPUT: Int of unix timestamp
     '''
-    dt = datetime.datetime(time[0], time[1], time[2], time[3], time[4], time[5])
+    dt = datetime.datetime(input_time[0], input_time[1], input_time[2],
+                           input_time[3], input_time[4], input_time[5])
     return int(time.mktime(dt.timetuple()))
 
 
@@ -71,4 +72,4 @@ if __name__ == '__main__':
     interval = int(argv[13])
     print(f'Interval: {interval} seconds')
 
-    scrape(start_date, end_date, 30)
+    scrape(start_date, end_date, interval)
