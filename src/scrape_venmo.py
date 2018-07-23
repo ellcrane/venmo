@@ -75,9 +75,11 @@ def scrape(start_date, end_date, interval, limit=1000000):
         start_unix_ts = get_unix_timestamp(start_date)
         end_unix_ts = get_unix_timestamp(end_date)
         scrape_count = int((end_unix_ts - start_unix_ts) / interval)
+        scraped = 0
         print(
             f'With your parameters, this function will scrape the public venmo API {scrape_count} times.')
         for i in range(start_unix_ts, end_unix_ts, interval):
+            print(f'{((scrape_count - scraped)*1.5)/60} remaining minutes')
             url = get_venmo_url(i, i + interval, limit)
             if url in links:
                 print(f'already scraped: {url}')
@@ -88,6 +90,7 @@ def scrape(start_date, end_date, interval, limit=1000000):
                 obj = s3.Object('transaction-data-2018', f'{file_name}.json')
                 obj.put(Body=json.dumps(data))
                 time.sleep(1)
+            scraped += 1
 
 
 if __name__ == '__main__':
