@@ -80,11 +80,10 @@ def scrape(start_date, end_date, interval, limit=1000000):
         for i in range(start_unix_ts, end_unix_ts, interval):
             url = get_venmo_url(i, i + interval, limit)
             if url in links:
-                print('Already scraped this!')
                 print(f'already scraped: {url}')
             else:
-                print(f'scraping: {url}')
                 data = get_venmo_data(url)['data']
+                print(f'scraping {len(data)}: {url}')
                 file_name = f'{i}_{i + interval}_{limit}'
                 obj = s3.Object('transaction-data-2018', f'{file_name}.json')
                 obj.put(Body=json.dumps(data))
