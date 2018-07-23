@@ -28,12 +28,46 @@ def get_venmo_data(url):
     return json_data
 
 
+def get_unix_timestamp(time):
+    '''
+    INPUT: list in following format: [year, month, day, hours (24), minutes, seconds] **for UTC**
+    OUTPUT: Int of unix timestamp
+    '''
+    dt = datetime.datetime(time[0], time[1], time[2], time[3], time[4], time[5])
+    return calendar.timegm(dt.utctimetuple())
+
+
+def get_s3_keys(bucket):
+    """Get a list of keys in an S3 bucket."""
+    keys = []
+    s3 = boto3.client('s3')
+    response = s3.list_objects_v2(Bucket=bucket)
+    for obj in response['Contents']:
+        keys.append(obj['Key'])
+    return keys
+
+
+def get_df_from_aws_keys(bucket, key_list):
+    s3 = boto3.client('s3')
+    data = list()
+    for i in range(len(key_list)):
+        if i % 20 == 0:
+            print(len(key_list) - i)
+        response = s3.get_object(Bucket=bucket, Key=key_list[i])
+        body = json.loads((response['Body'].read()))
+        data.extend(body)
+    return pd.DataFrame(data)
+
+
 def scrape(start_date, end_date, interval, limit=1000000):
     '''
     INPUT: start_date and end_date, each as list in format: [year, month, day, hours (24), minutes, seconds]
            Int of min 10 representing the number of second-long intervals to scrape
     OUTPUT: none, will upload to s3 bucket
     '''
+    keys = get_s3_keys('transaction-data-2018')
+    links = [get_venmo_url(key.split('_')[0], key.split('_')[1],
+                           key.split('_')[2]).split('.json')[0] for key in keys]
     s3 = boto3.resource('s3')
     if interval < 10:
         print('Interval must be greater than 10 seconds')
@@ -44,13 +78,17 @@ def scrape(start_date, end_date, interval, limit=1000000):
         print(
             f'With your parameters, this function will scrape the public venmo API {scrape_count} times.')
         for i in range(start_unix_ts, end_unix_ts, interval):
-            print(i)
             url = get_venmo_url(i, i + interval, limit)
-            data = get_venmo_data(url)['data']
-            file_name = f'{i}_{i + interval}_{limit}'
-            obj = s3.Object('transaction-data-2018', f'{file_name}.json')
-            obj.put(Body=json.dumps(data))
-            time.sleep(1)
+            if url in links:
+                print('Already scraped this!')
+                print(f'already scraped: {url}')
+            else:
+                print(f'scraping: {url}')
+                data = get_venmo_data(url)['data']
+                file_name = f'{i}_{i + interval}_{limit}'
+                obj = s3.Object('transaction-data-2018', f'{file_name}.json')
+                obj.put(Body=json.dumps(data))
+                time.sleep(1)
 
 
 if __name__ == '__main__':
